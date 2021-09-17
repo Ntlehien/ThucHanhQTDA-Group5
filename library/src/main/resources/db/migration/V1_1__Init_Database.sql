@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 8.0.15, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.26, for Win64 (x86_64)
 --
 -- Host: localhost    Database: library
 -- ------------------------------------------------------
--- Server version	8.0.15
+-- Server version	8.0.26
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
- SET NAMES utf8 ;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -21,17 +21,18 @@
 
 DROP TABLE IF EXISTS `book`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `book` (
-  `idbook` int(11) NOT NULL,
-  `idUser` varchar(36) COLLATE utf8_bin DEFAULT NULL,
-  `idFile` varchar(36) COLLATE utf8_bin DEFAULT NULL,
-  `name` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
-  `author` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
-  `quantity` int(11) DEFAULT NULL,
+  `idbook` varchar(36) NOT NULL,
+  `idUser` varchar(36) DEFAULT NULL,
+  `idFile` varchar(36) DEFAULT NULL,
+  `name` varchar(1024) DEFAULT NULL,
+  `author` varchar(1024) DEFAULT NULL,
+  `quantity` int DEFAULT NULL,
   PRIMARY KEY (`idbook`),
-  UNIQUE KEY `idbook_UNIQUE` (`idbook`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  KEY `fok_idUser_idx` (`idUser`),
+  CONSTRAINT `fok_idUser` FOREIGN KEY (`idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,13 +50,15 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `borrow`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `borrow` (
-  `idBorrow` int(11) NOT NULL,
-  `idBook` varchar(36) COLLATE utf8_bin DEFAULT NULL,
+  `idBorrow` varchar(36) NOT NULL,
+  `idUser` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`idBorrow`),
-  UNIQUE KEY `idBorrow_UNIQUE` (`idBorrow`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  UNIQUE KEY `idBorrow_UNIQUE` (`idBorrow`),
+  KEY `fok_idUser_borrow_idx` (`idUser`),
+  CONSTRAINT `fok_idUser_borrow` FOREIGN KEY (`idUser`) REFERENCES `users` (`idUser`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,15 +76,19 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `borrowdetail`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `borrowdetail` (
-  `idDetail` varchar(36) COLLATE utf8_bin NOT NULL,
-  `idBorrow` varchar(36) COLLATE utf8_bin DEFAULT NULL,
-  `idUser` varchar(36) COLLATE utf8_bin DEFAULT NULL,
-  `quatity` int(11) DEFAULT NULL,
+  `idDetail` varchar(36) NOT NULL,
+  `idBorrow` varchar(36) DEFAULT NULL,
+  `idBook` varchar(36) DEFAULT NULL,
+  `quantity` int DEFAULT NULL,
   PRIMARY KEY (`idDetail`),
-  UNIQUE KEY `idDetail_UNIQUE` (`idDetail`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  UNIQUE KEY `idDetail_UNIQUE` (`idDetail`),
+  KEY `fok_idBorrow_borrowdetail_idx` (`idBorrow`),
+  KEY `fok_idBorrow_idBook_idx` (`idBook`),
+  CONSTRAINT `fok_idBorrow_borrowdetail` FOREIGN KEY (`idBorrow`) REFERENCES `borrow` (`idBorrow`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fok_idBorrow_idBook` FOREIGN KEY (`idBook`) REFERENCES `book` (`idbook`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -99,14 +106,16 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `category` (
-  `idCate` varchar(36) COLLATE utf8_bin NOT NULL,
-  `name` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
-  `idBook` varchar(36) COLLATE utf8_bin DEFAULT NULL,
+  `idCate` varchar(36) NOT NULL,
+  `name` varchar(1024) DEFAULT NULL,
+  `idBook` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`idCate`),
-  UNIQUE KEY `idCate_UNIQUE` (`idCate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  UNIQUE KEY `idCate_UNIQUE` (`idCate`),
+  KEY `fok_idBook_category_idx` (`idBook`),
+  CONSTRAINT `fok_idBook_category` FOREIGN KEY (`idBook`) REFERENCES `book` (`idbook`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -124,15 +133,14 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `file`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `file` (
-  `idfile` int(11) NOT NULL,
-  `type` enum('0','1') COLLATE utf8_bin DEFAULT NULL,
-  `parentType` int(11) DEFAULT NULL,
-  `parentId` varchar(36) COLLATE utf8_bin DEFAULT NULL,
-  PRIMARY KEY (`idfile`),
-  UNIQUE KEY `idfile_UNIQUE` (`idfile`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  `idfile` varchar(36) NOT NULL,
+  `type` enum('0','1') DEFAULT NULL,
+  `parentType` int DEFAULT NULL,
+  `parentId` varchar(36) DEFAULT NULL,
+  PRIMARY KEY (`idfile`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,20 +158,20 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
-  `idUser` varchar(36) COLLATE utf8_bin NOT NULL,
-  `userName` varchar(36) COLLATE utf8_bin DEFAULT NULL,
-  `passWord` varchar(2048) COLLATE utf8_bin DEFAULT NULL,
-  `name` varchar(45) COLLATE utf8_bin DEFAULT NULL,
-  `address` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
-  `numberPhone` varchar(11) COLLATE utf8_bin DEFAULT NULL,
+  `idUser` varchar(36) NOT NULL,
+  `userName` varchar(36) CHARACTER SET utf8 DEFAULT NULL,
+  `passWord` varchar(2048) CHARACTER SET utf8 DEFAULT NULL,
+  `name` varchar(45) CHARACTER SET utf8 DEFAULT NULL,
+  `address` varchar(1024) CHARACTER SET utf8 DEFAULT NULL,
+  `numberPhone` varchar(11) CHARACTER SET utf8 DEFAULT NULL,
   `birthdate` datetime DEFAULT NULL,
-  `gender` int(11) DEFAULT NULL,
-  `role` enum('user','admin') COLLATE utf8_bin DEFAULT NULL,
-  `url` varchar(1024) COLLATE utf8_bin DEFAULT NULL,
+  `gender` int DEFAULT NULL,
+  `role` enum('user','admin') CHARACTER SET utf8 DEFAULT NULL,
+  `url` varchar(1024) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`idUser`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -184,4 +192,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-09-11 14:13:45
+-- Dump completed on 2021-09-14 16:09:10

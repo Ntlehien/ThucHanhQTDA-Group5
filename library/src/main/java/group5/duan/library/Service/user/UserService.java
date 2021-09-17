@@ -34,7 +34,6 @@ public class UserService  implements IUserService {
         UserEntity userEntity = userRepo.findFirstByUserNameAndPassword(authenticationRequestDto.getUsername(),
                 authenticationRequestDto.getPassword());
         if (userEntity != null) {
-            //Generate token
             UserDetails userDetails = this.loadUserByUsername(authenticationRequestDto.getUsername());
             final String token = jwtTokenUtil.generateToken(userDetails);
 
